@@ -324,3 +324,49 @@ Referencia a los archivos finales que incorporaron contenido generado por IA:
 - backgammon/pygame_ui/ui.py
 - CHANGELOG.md
 - assets/styles.md
+
+## Prompt
+
+Modelo / herramienta usada: jules
+
+Prompt exacto:
+fix(ui): Align Bar Checker Hitboxes with Visuals
+
+This commit resolves an issue where the clickable area (hitbox) for the bar checkers did not match their new visual positions.
+
+- The vertical drawing positions for the white and black checkers on the bar have been adjusted to be in the center of the top and bottom halves of the bar, respectively.
+- This change aligns the visual representation of the checkers with their underlying clickable rectangles, making them selectable as intended.
+- The previous UI enhancements, such as the single-checker display with a count, are maintained.
+
+Instrucciones del sistema:
+Siempre sigue los principios SOLID. Documentar el prompt y la respuesta en este archivo siguiendo el formato del proyecto.
+
+## Respuesta/resultado completo devuelto por la IA
+
+Se añadió una entrada en CHANGELOG.md describiendo la corrección de las hit-boxes de las fichas en la barra para alinear el área clicable con la posición visual.  
+La salida fue usada sin cambios.
+
+Referencias a los archivos finales que incorporaron contenido generado por IA:
+
+- backgammon/pygame_ui/ui.py
+- CHANGELOG.md
+
+## Prompt
+
+Modelo / herramienta usada: jules
+
+Prompt exacto:
+Se quitaron los numeros que indicaban la columna por colicion con fichas ademas se movio el indicador de los dados al medio
+
+Instrucciones del sistema:
+Mantener el formato de documentación de prompts y registrar la acción realizada en CHANGELOG.md.
+
+## Respuesta/resultado completo devuelto por la IA
+
+Se añadió una entrada de versión [1.6.2] en `CHANGELOG.md` describiendo los cambios visuales solicitados: eliminación de los números de columna que colisionaban con las fichas y reubicación del indicador de dados al centro de la barra central.  
+La salida fue usada sin cambios.
+
+Referencia a los archivos finales que incorporaron contenido generado por IA:
+
+- CHANGELOG.md
+- backgammon/pygame_ui/ui.py
