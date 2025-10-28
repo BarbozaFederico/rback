@@ -21,7 +21,8 @@ COLOR_BEAR_OFF_BAR    = (110, 85, 60)     # Madera tostada (zona de borneado)
 COLOR_PIEZA_NEGRA     = (15, 15, 15)      # Negro mate
 COLOR_PIEZA_BLANCA    = (245, 240, 230)   # Marfil cálido (evita blanco chillón)
 
-COLOR_BORDE_FICHA     = (153, 45, 45)     # Vino oscuro suave (en vez de rojo puro)
+COLOR_BORDE_BLANCA    = (200, 200, 200)   # Borde gris claro para fichas blancas
+COLOR_BORDE_NEGRA     = (50, 50, 50)      # Borde gris oscuro para fichas negras
 COLOR_TEXTO_NEGRO     = (230, 230, 230)   # Gris claro para texto sobre fondo oscuro
 COLOR_TEXTO_BLANCO    = (250, 244, 227)   # Blanco cálido para contraste
 
@@ -209,7 +210,8 @@ class PygameUI:
                 continue
 
             rect = self.point_rects[point_idx]
-            color = checker_colors[checkers[0].get_color()]
+            player_color = checkers[0].get_color()
+            checker_color = checker_colors[player_color]
             is_top_row = point_idx >= 12
             direction = 1 if is_top_row else -1
             base_y = (
@@ -218,27 +220,39 @@ class PygameUI:
                 else rect.bottom - self.checker_radius
             )
 
-            for i, checker in enumerate(checkers):
-                if i >= 5:
-                    count_text = self.font.render(
-                        str(len(checkers)), True, COLOR_TEXTO_BLANCO
-                    )
-                    # The circle for the count is at the 5th position (index 4)
-                    circle_y = base_y + (4 * 2 * self.checker_radius * direction)
-                    text_rect = count_text.get_rect(
-                        center=(rect.centerx, circle_y)
-                    )
-                    self.screen.blit(count_text, text_rect)
-                    break
-
+            # Draw up to 4 checkers
+            num_to_draw = min(len(checkers), 4)
+            for i in range(num_to_draw):
                 center_x = rect.centerx
                 center_y = base_y + (i * 2 * self.checker_radius * direction)
-                pygame.draw.circle(
-                    self.screen, color, (center_x, center_y), self.checker_radius
+                border_color = (
+                    COLOR_BORDE_BLANCA
+                    if player_color == "blancas"
+                    else COLOR_BORDE_NEGRA
                 )
                 pygame.draw.circle(
-                    self.screen, COLOR_BORDE_FICHA, (center_x, center_y), self.checker_radius, 2
+                    self.screen, checker_color, (center_x, center_y), self.checker_radius
                 )
+                pygame.draw.circle(
+                    self.screen,
+                    border_color,
+                    (center_x, center_y),
+                    self.checker_radius,
+                    2,
+                )
+
+            # If there are 5 or more checkers, display the count instead of the 5th checker
+            if len(checkers) > 4:
+                text_color = (
+                    COLOR_PIEZA_NEGRA
+                    if player_color == "blancas"
+                    else COLOR_PIEZA_BLANCA
+                )
+                count_text = self.font.render(str(len(checkers)), True, text_color)
+                # Position the count where the 5th checker would be (index 4)
+                count_y = base_y + (4 * 2 * self.checker_radius * direction)
+                text_rect = count_text.get_rect(center=(rect.centerx, count_y))
+                self.screen.blit(count_text, text_rect)
 
         # Draw checkers on the bar
         bar_x = self.board_edge + 6 * self.point_width + self.bar_width / 2
@@ -257,11 +271,16 @@ class PygameUI:
             center_y = positions[color_name]
 
             # Draw a single checker representing the stack on the bar
+            border_color = (
+                COLOR_BORDE_BLANCA
+                if color_name == "blancas"
+                else COLOR_BORDE_NEGRA
+            )
             pygame.draw.circle(
                 self.screen, color, (bar_x, center_y), self.checker_radius
             )
             pygame.draw.circle(
-                self.screen, COLOR_BORDE_FICHA, (bar_x, center_y), self.checker_radius, 2
+                self.screen, border_color, (bar_x, center_y), self.checker_radius, 2
             )
 
             # If there's more than one, draw the count
