@@ -46,12 +46,80 @@ JUEGO = "JUEGO"
 
 class PygameUI:
     """
-    A class to handle the Pygame user interface for the Backgammon game.
+    Clase para manejar la interfaz de usuario de Pygame para el juego de Backgammon.
+
+    ...
+
+    Attributes
+    ----------
+    screen : pygame.Surface
+        La superficie principal de la pantalla del juego.
+    font : pygame.font.Font
+        La fuente utilizada para el texto normal.
+    large_font : pygame.font.Font
+        La fuente utilizada para el texto grande (títulos, etc.).
+    clock : pygame.time.Clock
+        El reloj de Pygame para controlar la velocidad de fotogramas.
+    estado_juego : str
+        El estado actual del juego (ej. SELECCION_COLOR, JUEGO).
+    dados_iniciales : dict
+        Almacena los resultados de la tirada de dados inicial.
+    ganador_tirada_inicial : str
+        El color del jugador que gana la tirada inicial.
+    tiempo_inicio_tirada : float
+        Marca de tiempo para controlar las pausas en la tirada inicial.
+    boton_empezar_rect : pygame.Rect
+        El rectángulo del botón "Empezar".
+    juego_iniciado : bool
+        Indica si el juego principal ha comenzado.
+    game_over : bool
+        Indica si el juego ha terminado.
+    winner : Player
+        El jugador que ha ganado la partida.
+    game_over_time : float
+        Marca de tiempo para mostrar la pantalla de fin de juego.
+    board_edge : int
+        El grosor del borde del tablero.
+    point_height : int
+        La altura de los triángulos (puntos) del tablero.
+    point_width : int
+        La anchura de los triángulos (puntos) del tablero.
+    bar_width : int
+        La anchura de la barra central.
+    checker_radius : int
+        El radio de las fichas.
+    selected_point : int
+        El índice del punto seleccionado por el jugador.
+    point_rects : list
+        Lista de rectángulos para cada punto del tablero.
+    bar_rects : dict
+        Diccionario de rectángulos para la barra.
+    bear_off_rects : dict
+        Diccionario de rectángulos para las zonas de bear-off.
+    used_dice : list
+        Lista de los valores de los dados que ya se han utilizado en el turno.
+    possible_moves : list
+        (No utilizado actualmente, la lógica es dinámica).
+    possible_dests : list
+        Lista de destinos posibles desde una ficha seleccionada.
+    selected_source : int or str
+        El origen seleccionado para un movimiento ('bar' o índice de punto).
+    game : BackgammonGame
+        La instancia del objeto del juego principal.
+
+    Methods
+    -------
+    run()
+        El bucle principal que ejecuta la interfaz de usuario del juego.
     """
 
     def __init__(self):
         """
-        Initializes the Pygame UI.
+        Inicializa la interfaz de usuario de Pygame.
+
+        Este método configura la ventana de Pygame, las fuentes, el reloj y el
+        estado inicial del juego y de la interfaz. También calcula las dimensiones
+        y posiciones de los elementos del tablero.
         """
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -103,7 +171,13 @@ class PygameUI:
         # self._setup_game() will be called after the initial screens
 
     def _calculate_bar_rects(self):
-        """Calculates the clickable rects for each player's bar."""
+        """
+        Calcula los rectángulos clicables para la barra de cada jugador.
+
+        La barra se divide en dos mitades, una para las fichas blancas (arriba)
+        y otra para las negras (abajo). Estos rectángulos se usan para
+        detectar clics y para dibujar las fichas en la barra.
+        """
         bar_x = self.board_edge + 6 * self.point_width
         # The top half of the bar is for white's checkers
         self.bar_rects["blancas"] = pygame.Rect(bar_x, 0, self.bar_width, HEIGHT / 2)
@@ -113,7 +187,14 @@ class PygameUI:
         )
 
     def _calculate_bear_off_rects(self):
-        """Calculates the clickable rects for each player's bear-off area."""
+        """
+        Calcula los rectángulos clicables para la zona de bear-off de cada jugador.
+
+        Estas áreas, situadas a la derecha del tablero, son donde las fichas
+        se retiran del juego. Se definen dos rectángulos, uno para cada
+        jugador, para gestionar los clics y la visualización del contador
+        de fichas retiradas.
+        """
         # This area is now to the right of the main board
         bear_off_x = (
             self.board_edge + (12 * self.point_width) + self.bar_width + self.board_edge
@@ -134,7 +215,14 @@ class PygameUI:
         )
 
     def _setup_game(self):
-        """Sets up the players and starts the game."""
+        """
+        Configura los jugadores e inicia la partida en el motor del juego.
+
+        Este método se llama después de la tirada inicial. Crea las configuraciones
+        para los dos jugadores (blancas y negras) y las utiliza para inicializar
+        el estado del juego en la instancia de `BackgammonGame`, estableciendo
+        el primer turno y realizando la primera tirada de dados.
+        """
         player_configs = [
             {
                 "id": "P1",
@@ -159,7 +247,15 @@ class PygameUI:
         self.game.roll_dice()
 
     def _calculate_point_rects(self):
-        """Calculates the clickable rects for each point and stores them."""
+        """
+        Calcula y almacena los rectángulos clicables para cada uno de los 24 puntos.
+
+        El método itera a través de las columnas visuales del tablero para definir
+        un rectángulo para cada punto. Estos rectángulos son cruciales para
+        la detección de clics del ratón y para determinar dónde dibujar
+        las fichas. La lógica tiene en cuenta la barra central para calcular
+        las posiciones `x` correctamente.
+        """
         # i is the visual column from left to right
         for i in range(12):
             # Bottom row
@@ -188,7 +284,16 @@ class PygameUI:
             )
 
     def _draw_checkers(self):
-        """Draws the checkers on the board based on the game state."""
+        """
+        Dibuja las fichas en el tablero, la barra y las zonas de bear-off.
+
+        Este método renderiza el estado actual de todas las fichas basándose en
+        los datos de `self.game.board`. Dibuja las pilas de fichas en cada punto,
+        muestra un contador numérico para pilas de más de 5 fichas, dibuja las
+        fichas en la barra con su contador, y muestra el número de fichas
+        retiradas. También se encarga de resaltar visualmente la ficha
+        seleccionada y los posibles destinos.
+        """
         checker_colors = {"blancas": COLOR_PIEZA_BLANCA, "negras": COLOR_PIEZA_NEGRA}
 
         # Highlight selected source
@@ -331,7 +436,12 @@ class PygameUI:
                 )
 
     def _draw_game_over_screen(self):
-        """Draws the game over screen."""
+        """
+        Dibuja la pantalla de fin de juego.
+
+        Muestra una superposición semitransparente sobre el tablero y anuncia
+        al ganador de la partida en el centro de la pantalla.
+        """
         # Create a semi-transparent overlay
         overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))  # Black with alpha
@@ -344,7 +454,13 @@ class PygameUI:
         self.screen.blit(text_surface, text_rect)
 
     def _draw_game_info(self):
-        """Displays the current player and dice roll within the central bar."""
+        """
+        Muestra la información del turno actual en la barra central.
+
+        Renderiza el nombre del jugador actual y el resultado de la tirada de dados
+        en el centro de la barra para mantener al jugador informado sobre el
+        estado del turno.
+        """
         player = self.game.get_current_player()
         dice = self.game.dice.get_values()
 
@@ -369,7 +485,11 @@ class PygameUI:
 
     def _draw_board(self):
         """
-        Draws the static elements of the backgammon board using pre-calculated rects.
+        Dibuja los elementos estáticos del tablero de backgammon.
+
+        Esto incluye el fondo, el marco, la barra central, las zonas de bear-off
+        y los 24 triángulos (puntos). Utiliza los rectángulos precalculados
+        para posicionar cada elemento.
         """
         # Dibuja el fondo de la mesa y el marco del tablero
         self.screen.fill(COLOR_FONDO_MESA)
@@ -441,14 +561,39 @@ class PygameUI:
                 )
 
     def _get_point_from_pos(self, pos):
-        """Converts mouse coordinates to a board point index (0-23)."""
+        """
+        Convierte las coordenadas del ratón en un índice de punto del tablero (0-23).
+
+        Parameters
+        ----------
+        pos : tuple[int, int]
+            Las coordenadas (x, y) del clic del ratón.
+
+        Returns
+        -------
+        Optional[int]
+            El índice del punto (0-23) si el clic fue dentro de un punto,
+            o None si no lo fue.
+        """
         for i, rect in enumerate(self.point_rects):
             if rect and rect.collidepoint(pos):
                 return i
         return None
 
     def _get_bear_off_from_pos(self, pos):
-        """Checks if the mouse click is on a valid bear-off area."""
+        """
+        Comprueba si las coordenadas del ratón están en la zona de bear-off del jugador actual.
+
+        Parameters
+        ----------
+        pos : tuple[int, int]
+            Las coordenadas (x, y) del clic del ratón.
+
+        Returns
+        -------
+        Optional[str]
+            Devuelve "bear_off" si el clic fue en la zona válida, o None si no.
+        """
         player = self.game.get_current_player()
         if self.bear_off_rects[player.get_color()].collidepoint(pos):
             return "bear_off"
@@ -456,9 +601,21 @@ class PygameUI:
 
     def _get_possible_dests(self, source):
         """
-        Calculates and returns possible destinations for a given source
-        based on the current available dice.
-        This now dynamically recalculates moves for each die.
+        Calcula y devuelve los posibles destinos desde un punto de origen.
+
+        Consulta al motor del juego para obtener todos los movimientos legales
+        desde el `source` dado, utilizando cada uno de los dados disponibles.
+
+        Parameters
+        ----------
+        source : int or str
+            El punto de origen (índice 0-23) o la barra ('bar').
+
+        Returns
+        -------
+        list[int or str]
+            Una lista de posibles destinos, donde cada destino es un índice
+            de punto o la cadena "bear_off".
         """
         dests = []
         start_point = None if source == "bar" else source
@@ -482,8 +639,19 @@ class PygameUI:
 
     def _attempt_move(self, source, destination):
         """
-        Finds a valid move, applies it, and updates the game state.
-        The logic is now simpler as it handles one move at a time.
+        Intenta realizar un movimiento de una ficha desde un origen a un destino.
+
+        Busca qué dado disponible permite el movimiento solicitado. Si lo encuentra,
+        aplica el movimiento en el tablero, marca el dado como usado y
+        actualiza el estado de la UI. Si el turno del jugador termina,
+        llama a `_end_turn`.
+
+        Parameters
+        ----------
+        source : int or str
+            El punto de origen (índice 0-23) o 'bar'.
+        destination : int or str
+            El punto de destino (índice 0-23) o 'bear_off'.
         """
         player = self.game.get_current_player()
         start_idx = None if source == "bar" else source
@@ -529,7 +697,18 @@ class PygameUI:
             self._end_turn()
 
     def _get_current_dice(self):
-        """Returns the full list of dice for the current turn, handling doubles."""
+        """
+        Devuelve la lista completa de dados para el turno actual, manejando dobles.
+
+        Si se han sacado dobles (ej. 3-3), devuelve una lista con cuatro
+        ocurrencias de ese valor (ej. [3, 3, 3, 3]). De lo contrario,
+        devuelve los dos valores de los dados.
+
+        Returns
+        -------
+        list[int]
+            La lista de todos los valores de dados para el turno.
+        """
         dice = list(self.game.dice.get_values())
         if not dice:
             return []
@@ -539,7 +718,17 @@ class PygameUI:
         return dice
 
     def _get_available_dice(self):
-        """Returns the dice that have not yet been used this turn."""
+        """
+        Devuelve los dados que aún no se han utilizado en el turno actual.
+
+        Compara la lista completa de dados del turno con la lista de dados ya
+        utilizados y devuelve los que quedan disponibles.
+
+        Returns
+        -------
+        list[int]
+            Una lista con los valores de los dados disponibles.
+        """
         available = self._get_current_dice()
         for die in self.used_dice:
             if die in available:
@@ -547,7 +736,18 @@ class PygameUI:
         return available
 
     def _has_any_legal_moves(self):
-        """Checks if there are any legal moves for any of the available dice."""
+        """
+        Comprueba si el jugador actual tiene algún movimiento legal disponible.
+
+        Itera a través de los dados disponibles y consulta al motor del juego
+        si existe al menos un movimiento posible para alguno de ellos. Es clave
+        para determinar si se debe pasar el turno automáticamente.
+
+        Returns
+        -------
+        bool
+            True si hay al menos un movimiento legal, False en caso contrario.
+        """
         player = self.game.get_current_player()
         available_dice = self._get_available_dice()
         # Test each unique die value. If any of them yield a move, return True.
@@ -559,7 +759,15 @@ class PygameUI:
         return False
 
     def _end_turn(self):
-        """Finalizes the current turn and sets up the next one."""
+        """
+        Finaliza el turno actual y prepara el siguiente.
+
+        Este método se encarga de cambiar al siguiente jugador, lanzar nuevos
+        dados y reiniciar el estado de la UI para el nuevo turno (como los
+        dados usados y la selección). También comprueba si la partida ha
+        terminado. Si el nuevo jugador no tiene movimientos legales, llama
+        recursivamente a esta función para pasar el turno de nuevo.
+        """
         print("--- Turno finalizado ---")
 
         if self.game.is_game_over():
@@ -590,7 +798,19 @@ class PygameUI:
             self._end_turn()
 
     def _handle_click(self, pos):
-        """Handles a mouse click, re-evaluating moves dynamically."""
+        """
+        Gestiona los clics del ratón durante el juego.
+
+        Esta es la función central que procesa la entrada del jugador. Determina
+        si se ha hecho clic en un punto, la barra o la zona de bear-off.
+        Su lógica decide si seleccionar un origen, deseleccionarlo, cambiar
+        de selección o intentar realizar un movimiento.
+
+        Parameters
+        ----------
+        pos : tuple[int, int]
+            Las coordenadas (x, y) del evento de clic del ratón.
+        """
         player = self.game.get_current_player()
         clicked_point = self._get_point_from_pos(pos)
         clicked_bear_off = self._get_bear_off_from_pos(pos)
@@ -632,7 +852,23 @@ class PygameUI:
             self.possible_dests = self._get_possible_dests(self.selected_source)
 
     def _is_valid_source(self, point_idx):
-        """Check if a point is a valid source for a move."""
+        """
+        Comprueba si un punto es un origen válido para un movimiento.
+
+        Un punto es un origen válido si contiene fichas del jugador actual
+        y si existe al menos un movimiento legal posible desde ese punto con
+        los dados disponibles.
+
+        Parameters
+        ----------
+        point_idx : int
+            El índice del punto a comprobar.
+
+        Returns
+        -------
+        bool
+            True si el punto es un origen válido, False en caso contrario.
+        """
         player = self.game.get_current_player()
         # Must have checkers of the player's color
         if (
@@ -648,6 +884,24 @@ class PygameUI:
     def _draw_boton_redondeado(
         self, text, rect, text_color, bg_color, hover_color, radius=20
     ):
+        """
+        Dibuja un botón con bordes redondeados y efecto hover.
+
+        Parameters
+        ----------
+        text : str
+            El texto que se mostrará en el botón.
+        rect : pygame.Rect
+            El rectángulo que define la posición y tamaño del botón.
+        text_color : tuple[int, int, int]
+            El color del texto.
+        bg_color : tuple[int, int, int]
+            El color de fondo del botón.
+        hover_color : tuple[int, int, int]
+            El color de fondo cuando el ratón está sobre el botón.
+        radius : int, optional
+            El radio de los bordes redondeados (por defecto es 20).
+        """
         mouse_pos = pygame.mouse.get_pos()
         is_hovered = rect.collidepoint(mouse_pos)
 
@@ -662,6 +916,12 @@ class PygameUI:
         self.screen.blit(text_surface, text_rect)
 
     def _draw_pantalla_seleccion_color(self):
+        """
+        Dibuja la pantalla de bienvenida inicial.
+
+        Esta pantalla muestra un título y un botón "Empezar" para que el
+        usuario inicie el proceso del juego.
+        """
         self.screen.fill(COLOR_FONDO_MESA)
         titulo_surface = self.large_font.render(
             "Bienvenido/a a Backgammon", True, COLOR_TEXTO_NEGRO
@@ -686,6 +946,17 @@ class PygameUI:
         )
 
     def _handle_eventos_seleccion_color(self, event):
+        """
+        Gestiona los eventos de la pantalla de selección de color.
+
+        Detecta si el usuario ha hecho clic en el botón "Empezar" para
+        avanzar al siguiente estado del juego (la tirada inicial).
+
+        Parameters
+        ----------
+        event : pygame.event.Event
+            El evento de Pygame a procesar.
+        """
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.boton_empezar_rect and self.boton_empezar_rect.collidepoint(
                 event.pos
@@ -693,6 +964,12 @@ class PygameUI:
                 self.estado_juego = TIRADA_INICIAL
 
     def _draw_pantalla_tirada_inicial(self):
+        """
+        Dibuja la pantalla de la tirada inicial de dados.
+
+        Muestra el proceso de la tirada, los resultados de cada jugador y
+        quién ha ganado el derecho a empezar la partida.
+        """
         self.screen.fill(COLOR_FONDO_MESA)
         if not self.ganador_tirada_inicial:
             msg = "Tirando dados..."
@@ -712,6 +989,14 @@ class PygameUI:
             self.screen.blit(ganador_surface, ganador_rect)
 
     def _manejar_logica_tirada_inicial(self):
+        """
+        Gestiona la lógica de la tirada inicial para decidir quién empieza.
+
+        Este método realiza una tirada de dados para cada jugador. Determina
+        el ganador basándose en el resultado más alto. En caso de empate,
+        gestiona una nueva tirada tras una breve pausa. Una vez hay un
+        ganador, se encarga de la transición al estado de juego principal.
+        """
         ahora = time.time()
         # Si no hay una tirada en curso, empezamos una
         if self.tiempo_inicio_tirada is None:
@@ -743,7 +1028,15 @@ class PygameUI:
                     self.ganador_tirada_inicial = None
 
     def run(self):
-        """The main loop of the game."""
+        """
+        El bucle principal del juego.
+
+        Este método contiene el bucle `while` que mantiene el juego en ejecución.
+        Se encarga de procesar eventos (como clics y cierre de ventana),
+        llamar a las funciones de lógica y dibujo correspondientes al estado
+        actual del juego, y actualizar la pantalla. El bucle se ejecuta
+        hasta que el usuario cierra la ventana.
+        """
         running = True
         while running:
             for event in pygame.event.get():
