@@ -216,12 +216,17 @@ class PygameUI:
 
             for i, checker in enumerate(checkers):
                 if i >= 5:
-                    count_text = self.font.render(str(len(checkers)), True, RED)
-                    text_y = base_y + (4 * 2 * self.checker_radius * direction)
-                    self.screen.blit(
-                        count_text, (rect.centerx - count_text.get_width() / 2, text_y)
+                    count_text = self.font.render(
+                        str(len(checkers)), True, COLOR_TEXTO_BLANCO
                     )
+                    # The circle for the count is at the 5th position (index 4)
+                    circle_y = base_y + (4 * 2 * self.checker_radius * direction)
+                    text_rect = count_text.get_rect(
+                        center=(rect.centerx, circle_y)
+                    )
+                    self.screen.blit(count_text, text_rect)
                     break
+
                 center_x = rect.centerx
                 center_y = base_y + (i * 2 * self.checker_radius * direction)
                 pygame.draw.circle(
@@ -301,24 +306,32 @@ class PygameUI:
         self.screen.blit(text_surface, text_rect)
 
     def _draw_game_info(self):
-        """Displays the current player and dice roll."""
+        """Displays the current player and dice roll within the central bar."""
         player = self.game.get_current_player()
         dice = self.game.dice.get_values()
 
-        player_text = f"Turn: {player.get_nombre()} ({player.get_color()})"
-        dice_text = f"Dice: {dice[0]}, {dice[1]}" if dice else "Dice: Not rolled"
+        # Define the central bar area for text
+        bar_center_x = self.board_edge + 6 * self.point_width + self.bar_width / 2
+        bar_top = HEIGHT / 2 - 100  # Example vertical positioning
+        bar_bottom = HEIGHT / 2 + 100
 
-        player_surface = self.font.render(player_text, True, COLOR_TEXTO_NEGRO)
-        dice_surface = self.font.render(dice_text, True, COLOR_TEXTO_NEGRO)
-
-        info_x = self.board_edge + 6 * self.point_width + self.bar_width / 2
-
-        self.screen.blit(
-            player_surface, (info_x - player_surface.get_width() / 2, self.board_edge)
+        # Player's turn text
+        player_color_name = player.get_color().capitalize()
+        turn_font = pygame.font.Font(None, 36)
+        player_surface = turn_font.render(
+            player_color_name, True, COLOR_TEXTO_BLANCO
         )
-        self.screen.blit(
-            dice_surface, (info_x - dice_surface.get_width() / 2, self.board_edge + 30)
+        player_rect = player_surface.get_rect(
+            center=(bar_center_x, bar_top + 50)
         )
+        self.screen.blit(player_surface, player_rect)
+
+        # Dice roll text
+        dice_text = f"{dice[0]} - {dice[1]}" if dice else "..."
+        dice_font = pygame.font.Font(None, 48)
+        dice_surface = dice_font.render(dice_text, True, COLOR_TEXTO_BLANCO)
+        dice_rect = dice_surface.get_rect(center=(bar_center_x, bar_bottom - 50))
+        self.screen.blit(dice_surface, dice_rect)
 
     def _draw_board(self):
         """
@@ -357,29 +370,47 @@ class PygameUI:
             )  # Flipped this to match original look
 
             # Draw triangle
+            triangle_margin = 2
             if i >= 12:  # Top row points down
                 pygame.draw.polygon(
                     self.screen,
                     point_color,
-                    [rect.topleft, rect.topright, rect.midbottom],
+                    [
+                        (rect.left, rect.top + triangle_margin),
+                        (rect.right, rect.top + triangle_margin),
+                        rect.midbottom,
+                    ],
                 )
             else:  # Bottom row points up
                 pygame.draw.polygon(
                     self.screen,
                     point_color,
-                    [rect.bottomleft, rect.bottomright, rect.midtop],
+                    [
+                        (rect.left, rect.bottom - triangle_margin),
+                        (rect.right, rect.bottom - triangle_margin),
+                        rect.midtop,
+                    ],
                 )
 
             # Draw number
             ui_number = i + 1
             num_text = self.font.render(str(ui_number), True, COLOR_TEXTO_NEGRO)
+            text_margin = 5
             if i >= 12:  # Top row
                 self.screen.blit(
-                    num_text, (rect.centerx - num_text.get_width() / 2, rect.bottom + 5)
+                    num_text,
+                    (
+                        rect.centerx - num_text.get_width() / 2,
+                        rect.bottom + text_margin,
+                    ),
                 )
             else:  # Bottom row
                 self.screen.blit(
-                    num_text, (rect.centerx - num_text.get_width() / 2, rect.top - 25)
+                    num_text,
+                    (
+                        rect.centerx - num_text.get_width() / 2,
+                        rect.top - num_text.get_height() - text_margin,
+                    ),
                 )
 
     def _get_point_from_pos(self, pos):
