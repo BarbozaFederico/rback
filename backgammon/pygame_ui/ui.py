@@ -241,7 +241,7 @@ class PygameUI:
                     2,
                 )
 
-            # If there are 5 or more checkers, display the count instead of the 5th checker
+            # If there are 5 or more checkers, display the count on the last visible checker
             if len(checkers) > 4:
                 text_color = (
                     COLOR_PIEZA_NEGRA
@@ -249,8 +249,8 @@ class PygameUI:
                     else COLOR_PIEZA_BLANCA
                 )
                 count_text = self.font.render(str(len(checkers)), True, text_color)
-                # Position the count where the 5th checker would be (index 4)
-                count_y = base_y + (4 * 2 * self.checker_radius * direction)
+                # Position the count on the 4th checker's position (index 3)
+                count_y = base_y + (3 * 2 * self.checker_radius * direction)
                 text_rect = count_text.get_rect(center=(rect.centerx, count_y))
                 self.screen.blit(count_text, text_rect)
 
@@ -387,6 +387,18 @@ class PygameUI:
         # Dibuja las áreas de bear-off
         for color, rect in self.bear_off_rects.items():
             pygame.draw.rect(self.screen, COLOR_BEAR_OFF_BAR, rect)
+            # Simular textura de madera o fieltro con líneas
+            for i in range(0, rect.width, 5):
+                line_color = (
+                    *COLOR_TRIANGULO_OSCURO,
+                    50,
+                )  # Añadir canal alfa para transparencia
+                start_pos = (rect.left + i, rect.top)
+                end_pos = (rect.left + i, rect.bottom)
+                pygame.draw.line(self.screen, line_color, start_pos, end_pos, 1)
+            pygame.draw.rect(
+                self.screen, COLOR_TRIANGULO_OSCURO, rect, 2
+            )  # Borde oscuro
 
         # Colores de los triángulos
         color1 = COLOR_TRIANGULO_CLARO
