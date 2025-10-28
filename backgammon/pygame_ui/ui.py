@@ -104,7 +104,11 @@ class PygameUI:
     def _calculate_bar_rects(self):
         """Calculates the clickable rects for each player's bar."""
         bar_x = self.board_edge + 6 * self.point_width
-        self.bar_rects["blancas"] = pygame.Rect(bar_x, 0, self.bar_width, HEIGHT / 2)
+        # The top half of the bar is for white's checkers
+        self.bar_rects["blancas"] = pygame.Rect(
+            bar_x, 0, self.bar_width, HEIGHT / 2
+        )
+        # The bottom half of the bar is for black's checkers
         self.bar_rects["negras"] = pygame.Rect(
             bar_x, HEIGHT / 2, self.bar_width, HEIGHT / 2
         )
@@ -239,9 +243,9 @@ class PygameUI:
         # Draw checkers on the bar
         bar_x = self.board_edge + 6 * self.point_width + self.bar_width / 2
 
-        # Define fixed Y positions for bar checkers to avoid overlap with info
-        y_pos_blancas = HEIGHT * 0.8
-        y_pos_negras = HEIGHT * 0.9
+        # Define fixed Y positions for bar checkers to align with hitboxes
+        y_pos_blancas = HEIGHT * 0.25  # Center of the top half
+        y_pos_negras = HEIGHT * 0.75   # Center of the bottom half
 
         positions = {"blancas": y_pos_blancas, "negras": y_pos_negras}
 
