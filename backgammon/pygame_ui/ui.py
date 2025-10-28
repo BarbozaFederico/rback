@@ -191,6 +191,27 @@ class PygameUI:
                 point_x_top, self.board_edge, self.point_width, self.point_height
             )
 
+    def _draw_3d_checker(self, surface, color, center, radius):
+        """Dibuja una ficha con efecto 3D, incluyendo sombra y brillo."""
+        shadow_color = (0, 0, 0, 100)
+        highlight_color = (255, 255, 255, 50)
+        darker_color = (int(color[0] * 0.8), int(color[1] * 0.8), int(color[2] * 0.8))
+
+        # Sombra arrojada
+        shadow_offset = int(radius * 0.1)
+        pygame.draw.circle(surface, shadow_color, (center[0] + shadow_offset, center[1] + shadow_offset), radius)
+
+        # Cuerpo principal de la ficha
+        pygame.draw.circle(surface, darker_color, center, radius)
+
+        # Borde interior para dar profundidad
+        pygame.draw.circle(surface, color, center, int(radius * 0.9))
+
+        # Brillo sutil
+        highlight_surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+        pygame.draw.circle(highlight_surface, highlight_color, (radius, radius), radius, int(radius * 0.2))
+        surface.blit(highlight_surface, (center[0] - radius, center[1] - radius))
+
     def _draw_checkers(self):
         """Draws the checkers on the board based on the game state."""
         checker_colors = {"blancas": COLOR_PIEZA_BLANCA, "negras": COLOR_PIEZA_NEGRA}
@@ -225,21 +246,8 @@ class PygameUI:
             for i in range(num_to_draw):
                 center_x = rect.centerx
                 center_y = base_y + (i * 2 * self.checker_radius * direction)
-                border_color = (
-                    COLOR_BORDE_BLANCA
-                    if player_color == "blancas"
-                    else COLOR_BORDE_NEGRA
-                )
-                pygame.draw.circle(
-                    self.screen, checker_color, (center_x, center_y), self.checker_radius
-                )
-                pygame.draw.circle(
-                    self.screen,
-                    border_color,
-                    (center_x, center_y),
-                    self.checker_radius,
-                    2,
-                )
+                self._draw_3d_checker(self.screen, checker_color, (center_x, center_y), self.checker_radius)
+
 
             # If there are more than 5 checkers, display the count on the last visible checker
             if len(checkers) > 5:
@@ -271,17 +279,7 @@ class PygameUI:
             center_y = positions[color_name]
 
             # Draw a single checker representing the stack on the bar
-            border_color = (
-                COLOR_BORDE_BLANCA
-                if color_name == "blancas"
-                else COLOR_BORDE_NEGRA
-            )
-            pygame.draw.circle(
-                self.screen, color, (bar_x, center_y), self.checker_radius
-            )
-            pygame.draw.circle(
-                self.screen, border_color, (bar_x, center_y), self.checker_radius, 2
-            )
+            self._draw_3d_checker(self.screen, color, (bar_x, center_y), self.checker_radius)
 
             # If there's more than one, draw the count
             if len(checkers) > 1:
@@ -374,72 +372,82 @@ class PygameUI:
         """
         Draws the static elements of the backgammon board using pre-calculated rects.
         """
-        # Dibuja el fondo de la mesa y el marco del tablero
+        # --- 1. Draw Textured Background ---
         self.screen.fill(COLOR_FONDO_MESA)
+
+        # Create a surface for the wood grain texture for the main playing area
+        wood_texture = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        grain_color = (*COLOR_FONDO_TABLERO, 15) # Use a very subtle, semi-transparent dark grain
+
+        # Draw long, wavy vertical grains to simulate wood
+        for i in range(WIDTH // 15): # Fewer lines for a more subtle effect
+            if random.randint(0, 1) == 0: continue
+
+            x_start = random.randint(0, WIDTH)
+            y_current = 0
+            x_current = x_start
+
+            while y_current < HEIGHT:
+                x_wobble = random.randint(-1, 1) * 2
+                y_step = random.randint(20, 40)
+                x_next, y_next = x_current + x_wobble, y_current + y_step
+                pygame.draw.line(wood_texture, grain_color, (x_current, y_current), (x_next, y_next), 2)
+                x_current, y_current = x_next, y_next
+
+        self.screen.blit(wood_texture, (0, 0))
+
+        # --- 2. Draw Board Frame and Bar ---
         pygame.draw.rect(
             self.screen, COLOR_FONDO_TABLERO, (0, 0, WIDTH, HEIGHT), self.board_edge * 2
         )
-
-        # Dibuja la barra central
         bar_x = self.board_edge + 6 * self.point_width
         pygame.draw.rect(self.screen, COLOR_FONDO_TABLERO, (bar_x, 0, self.bar_width, HEIGHT))
 
-        # Dibuja las áreas de bear-off
+        # --- 3. Draw Textured Bear-Off Areas ---
         for color, rect in self.bear_off_rects.items():
             pygame.draw.rect(self.screen, COLOR_BEAR_OFF_BAR, rect)
-            # Simular textura de madera o fieltro con líneas
-            for i in range(0, rect.width, 5):
-                line_color = (
-                    *COLOR_TRIANGULO_OSCURO,
-                    50,
-                )  # Añadir canal alfa para transparencia
-                start_pos = (rect.left + i, rect.top)
-                end_pos = (rect.left + i, rect.bottom)
-                pygame.draw.line(self.screen, line_color, start_pos, end_pos, 1)
+
+            # Enhanced wood texture for bear-off area
+            darker_wood = (int(COLOR_BEAR_OFF_BAR[0] * 0.85), int(COLOR_BEAR_OFF_BAR[1] * 0.85), int(COLOR_BEAR_OFF_BAR[2] * 0.85))
+            lighter_wood = (min(255, int(COLOR_BEAR_OFF_BAR[0] * 1.15)), min(255, int(COLOR_BEAR_OFF_BAR[1] * 1.15)), min(255, int(COLOR_BEAR_OFF_BAR[2] * 1.15)))
+
+            for i in range(0, rect.width, random.randint(4, 8)):
+                line_color = random.choice([darker_wood, lighter_wood])
+                start_x, end_x = rect.left + i, rect.left + i + random.randint(-1, 1)
+                pygame.draw.line(self.screen, line_color, (start_x, rect.top), (end_x, rect.bottom), 1)
+
+            for _ in range(2): # Add a couple of "knots"
+                 knot_x, knot_y = rect.left + random.randint(10, rect.width - 10), rect.top + random.randint(10, rect.height - 10)
+                 knot_radius = random.randint(3, 6)
+                 pygame.draw.circle(self.screen, darker_wood, (knot_x, knot_y), knot_radius)
+
             pygame.draw.rect(
                 self.screen, COLOR_TRIANGULO_CLARO, rect, 3
-            )  # Borde más grueso y claro
+            )  # Frame for bear-off
 
-        # Colores de los triángulos
+        # --- 4. Draw 3D Triangles ---
         color1 = COLOR_TRIANGULO_CLARO
         color2 = COLOR_TRIANGULO_OSCURO
 
-        # Dibuja los triángulos
         for i, rect in enumerate(self.point_rects):
-            if rect is None:
-                continue
+            if rect is None: continue
 
-            # Determine color based on visual column
-            if i >= 12:
-                vis_i = i - 12
-            else:
-                vis_i = 11 - i
-            point_color = (
-                color1 if vis_i % 2 != 0 else color2
-            )  # Flipped this to match original look
+            if i >= 12: vis_i = i - 12
+            else: vis_i = 11 - i
+            point_color = color1 if vis_i % 2 != 0 else color2
 
-            # Draw triangle
+            darker_color = (int(point_color[0] * 0.8), int(point_color[1] * 0.8), int(point_color[2] * 0.8))
+            lighter_color = (min(255, int(point_color[0] * 1.2)), min(255, int(point_color[1] * 1.2)), min(255, int(point_color[2] * 1.2)))
+
             triangle_margin = 2
-            if i >= 12:  # Top row points down
-                pygame.draw.polygon(
-                    self.screen,
-                    point_color,
-                    [
-                        (rect.left, rect.top + triangle_margin),
-                        (rect.right, rect.top + triangle_margin),
-                        rect.midbottom,
-                    ],
-                )
-            else:  # Bottom row points up
-                pygame.draw.polygon(
-                    self.screen,
-                    point_color,
-                    [
-                        (rect.left, rect.bottom - triangle_margin),
-                        (rect.right, rect.bottom - triangle_margin),
-                        rect.midtop,
-                    ],
-                )
+            if i >= 12:  # Top row
+                points = [(rect.left, rect.top + triangle_margin), (rect.right, rect.top + triangle_margin), rect.midbottom]
+            else:  # Bottom row
+                points = [(rect.left, rect.bottom - triangle_margin), (rect.right, rect.bottom - triangle_margin), rect.midtop]
+
+            pygame.draw.polygon(self.screen, point_color, points)
+            pygame.draw.aaline(self.screen, lighter_color, points[0], points[2])
+            pygame.draw.aaline(self.screen, darker_color, points[1], points[2])
 
     def _get_point_from_pos(self, pos):
         """Converts mouse coordinates to a board point index (0-23)."""
