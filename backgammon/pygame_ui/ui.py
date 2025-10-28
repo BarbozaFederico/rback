@@ -11,23 +11,23 @@ WIDTH, HEIGHT = 1400, 800
 # --- Nueva Paleta de Colores ---
 # --- Nueva Paleta de Colores (Dark Edition) ---
 
-COLOR_FONDO_TABLERO   = (40, 40, 45)      # Gris grafito oscuro (fondo principal)
-COLOR_TRIANGULO_CLARO = (175, 155, 135)   # Beige apagado
-COLOR_TRIANGULO_OSCURO= (92, 64, 51)      # Marrón chocolate profundo
+COLOR_FONDO_TABLERO = (40, 40, 45)  # Gris grafito oscuro (fondo principal)
+COLOR_TRIANGULO_CLARO = (175, 155, 135)  # Beige apagado
+COLOR_TRIANGULO_OSCURO = (92, 64, 51)  # Marrón chocolate profundo
 
-COLOR_FONDO_MESA      = (32, 32, 35)      # Gris muy oscuro (background interno)
-COLOR_BEAR_OFF_BAR    = (110, 85, 60)     # Madera tostada (zona de borneado)
+COLOR_FONDO_MESA = (32, 32, 35)  # Gris muy oscuro (background interno)
+COLOR_BEAR_OFF_BAR = (110, 85, 60)  # Madera tostada (zona de borneado)
 
-COLOR_PIEZA_NEGRA     = (15, 15, 15)      # Negro mate
-COLOR_PIEZA_BLANCA    = (245, 240, 230)   # Marfil cálido (evita blanco chillón)
+COLOR_PIEZA_NEGRA = (15, 15, 15)  # Negro mate
+COLOR_PIEZA_BLANCA = (245, 240, 230)  # Marfil cálido (evita blanco chillón)
 
-COLOR_BORDE_BLANCA    = (200, 200, 200)   # Borde gris claro para fichas blancas
-COLOR_BORDE_NEGRA     = (50, 50, 50)      # Borde gris oscuro para fichas negras
-COLOR_TEXTO_NEGRO     = (230, 230, 230)   # Gris claro para texto sobre fondo oscuro
-COLOR_TEXTO_BLANCO    = (250, 244, 227)   # Blanco cálido para contraste
+COLOR_BORDE_BLANCA = (200, 200, 200)  # Borde gris claro para fichas blancas
+COLOR_BORDE_NEGRA = (50, 50, 50)  # Borde gris oscuro para fichas negras
+COLOR_TEXTO_NEGRO = (230, 230, 230)  # Gris claro para texto sobre fondo oscuro
+COLOR_TEXTO_BLANCO = (250, 244, 227)  # Blanco cálido para contraste
 
-COLOR_HIGHLIGHT       = (0, 155, 130)     # Verde azulado profundo (destaca sin molestar)
-COLOR_BOTON_HOVER     = (119, 97, 82)     # Marrón suave (hover amigable)
+COLOR_HIGHLIGHT = (0, 155, 130)  # Verde azulado profundo (destaca sin molestar)
+COLOR_BOTON_HOVER = (119, 97, 82)  # Marrón suave (hover amigable)
 
 
 # --- Colores Antiguos (se mantendrán si son necesarios para elementos no temáticos) ---
@@ -106,9 +106,7 @@ class PygameUI:
         """Calculates the clickable rects for each player's bar."""
         bar_x = self.board_edge + 6 * self.point_width
         # The top half of the bar is for white's checkers
-        self.bar_rects["blancas"] = pygame.Rect(
-            bar_x, 0, self.bar_width, HEIGHT / 2
-        )
+        self.bar_rects["blancas"] = pygame.Rect(bar_x, 0, self.bar_width, HEIGHT / 2)
         # The bottom half of the bar is for black's checkers
         self.bar_rects["negras"] = pygame.Rect(
             bar_x, HEIGHT / 2, self.bar_width, HEIGHT / 2
@@ -156,9 +154,7 @@ class PygameUI:
             },
         ]
         self.game.setup_players(player_configs)
-        self.game.start_game(
-            primer_jugador_color=self.ganador_tirada_inicial
-        )
+        self.game.start_game(primer_jugador_color=self.ganador_tirada_inicial)
         # La tirada de dados y la configuración del turno se harán en el bucle principal del juego
         self.game.roll_dice()
 
@@ -221,7 +217,7 @@ class PygameUI:
             )
 
             # Draw up to 4 checkers
-            num_to_draw = min(len(checkers), 4)
+            num_to_draw = min(len(checkers), 5)
             for i in range(num_to_draw):
                 center_x = rect.centerx
                 center_y = base_y + (i * 2 * self.checker_radius * direction)
@@ -231,7 +227,10 @@ class PygameUI:
                     else COLOR_BORDE_NEGRA
                 )
                 pygame.draw.circle(
-                    self.screen, checker_color, (center_x, center_y), self.checker_radius
+                    self.screen,
+                    checker_color,
+                    (center_x, center_y),
+                    self.checker_radius,
                 )
                 pygame.draw.circle(
                     self.screen,
@@ -249,8 +248,8 @@ class PygameUI:
                     else COLOR_PIEZA_BLANCA
                 )
                 count_text = self.font.render(str(len(checkers)), True, text_color)
-                # Position the count on the 4th checker's position (index 3)
-                count_y = base_y + (3 * 2 * self.checker_radius * direction)
+                # Position the count on the 5th checker's position (index 4)
+                count_y = base_y + (4 * 2 * self.checker_radius * direction)
                 text_rect = count_text.get_rect(center=(rect.centerx, count_y))
                 self.screen.blit(count_text, text_rect)
 
@@ -259,7 +258,7 @@ class PygameUI:
 
         # Define fixed Y positions for bar checkers to align with hitboxes
         y_pos_blancas = HEIGHT * 0.25  # Center of the top half
-        y_pos_negras = HEIGHT * 0.75   # Center of the bottom half
+        y_pos_negras = HEIGHT * 0.75  # Center of the bottom half
 
         positions = {"blancas": y_pos_blancas, "negras": y_pos_negras}
 
@@ -272,9 +271,7 @@ class PygameUI:
 
             # Draw a single checker representing the stack on the bar
             border_color = (
-                COLOR_BORDE_BLANCA
-                if color_name == "blancas"
-                else COLOR_BORDE_NEGRA
+                COLOR_BORDE_BLANCA if color_name == "blancas" else COLOR_BORDE_NEGRA
             )
             pygame.draw.circle(
                 self.screen, color, (bar_x, center_y), self.checker_radius
@@ -285,10 +282,10 @@ class PygameUI:
 
             # If there's more than one, draw the count
             if len(checkers) > 1:
-                text_color = COLOR_PIEZA_NEGRA if color_name == 'blancas' else COLOR_PIEZA_BLANCA
-                count_text = self.font.render(
-                    str(len(checkers)), True, text_color
+                text_color = (
+                    COLOR_PIEZA_NEGRA if color_name == "blancas" else COLOR_PIEZA_BLANCA
                 )
+                count_text = self.font.render(str(len(checkers)), True, text_color)
                 text_rect = count_text.get_rect(center=(bar_x, center_y))
                 self.screen.blit(count_text, text_rect)
 
@@ -296,7 +293,9 @@ class PygameUI:
         white_borne_off = len(self.game.board.get_borne_off("blancas"))
         if white_borne_off > 0:
             white_rect = self.bear_off_rects["blancas"]
-            white_text = self.font.render(f"Off: {white_borne_off}", True, COLOR_TEXTO_NEGRO)
+            white_text = self.font.render(
+                f"Off: {white_borne_off}", True, COLOR_TEXTO_NEGRO
+            )
             self.screen.blit(
                 white_text,
                 (
@@ -308,7 +307,9 @@ class PygameUI:
         black_borne_off = len(self.game.board.get_borne_off("negras"))
         if black_borne_off > 0:
             black_rect = self.bear_off_rects["negras"]
-            black_text = self.font.render(f"Off: {black_borne_off}", True, COLOR_TEXTO_BLANCO)
+            black_text = self.font.render(
+                f"Off: {black_borne_off}", True, COLOR_TEXTO_BLANCO
+            )
             self.screen.blit(
                 black_text,
                 (
@@ -355,12 +356,8 @@ class PygameUI:
         # Player's turn text
         player_color_name = player.get_color().capitalize()
         turn_font = pygame.font.Font(None, 36)
-        player_surface = turn_font.render(
-            player_color_name, True, COLOR_TEXTO_BLANCO
-        )
-        player_rect = player_surface.get_rect(
-            center=(bar_center_x, bar_top + 50)
-        )
+        player_surface = turn_font.render(player_color_name, True, COLOR_TEXTO_BLANCO)
+        player_rect = player_surface.get_rect(center=(bar_center_x, bar_top + 50))
         self.screen.blit(player_surface, player_rect)
 
         # Dice roll text
@@ -382,7 +379,9 @@ class PygameUI:
 
         # Dibuja la barra central
         bar_x = self.board_edge + 6 * self.point_width
-        pygame.draw.rect(self.screen, COLOR_FONDO_TABLERO, (bar_x, 0, self.bar_width, HEIGHT))
+        pygame.draw.rect(
+            self.screen, COLOR_FONDO_TABLERO, (bar_x, 0, self.bar_width, HEIGHT)
+        )
 
         # Dibuja las áreas de bear-off
         for color, rect in self.bear_off_rects.items():
@@ -646,7 +645,9 @@ class PygameUI:
             return False
         return True
 
-    def _draw_boton_redondeado(self, text, rect, text_color, bg_color, hover_color, radius=20):
+    def _draw_boton_redondeado(
+        self, text, rect, text_color, bg_color, hover_color, radius=20
+    ):
         mouse_pos = pygame.mouse.get_pos()
         is_hovered = rect.collidepoint(mouse_pos)
 
@@ -671,7 +672,9 @@ class PygameUI:
         # Botón Empezar
         empezar_text = "Empezar"
         empezar_surface = self.large_font.render(empezar_text, True, COLOR_TEXTO_BLANCO)
-        empezar_rect_inflated = empezar_surface.get_rect(center=(WIDTH / 2, HEIGHT / 2)).inflate(40, 20)
+        empezar_rect_inflated = empezar_surface.get_rect(
+            center=(WIDTH / 2, HEIGHT / 2)
+        ).inflate(40, 20)
         self.boton_empezar_rect = empezar_rect_inflated
 
         self._draw_boton_redondeado(
@@ -702,10 +705,10 @@ class PygameUI:
 
         if self.ganador_tirada_inicial and self.ganador_tirada_inicial != "empate":
             ganador_msg = f"Comienzan las {self.ganador_tirada_inicial}"
-            ganador_surface = self.large_font.render(ganador_msg, True, COLOR_TEXTO_NEGRO)
-            ganador_rect = ganador_surface.get_rect(
-                center=(WIDTH / 2, HEIGHT / 2)
+            ganador_surface = self.large_font.render(
+                ganador_msg, True, COLOR_TEXTO_NEGRO
             )
+            ganador_rect = ganador_surface.get_rect(center=(WIDTH / 2, HEIGHT / 2))
             self.screen.blit(ganador_surface, ganador_rect)
 
     def _manejar_logica_tirada_inicial(self):
@@ -734,9 +737,10 @@ class PygameUI:
             # Si es un empate, esperamos un segundo y luego reiniciamos la tirada
             elif self.ganador_tirada_inicial == "empate":
                 if ahora - self.tiempo_inicio_tirada > 1.0:
-                    self.tiempo_inicio_tirada = None # Esto provocará una nueva tirada en el siguiente frame
+                    self.tiempo_inicio_tirada = (
+                        None  # Esto provocará una nueva tirada en el siguiente frame
+                    )
                     self.ganador_tirada_inicial = None
-
 
     def run(self):
         """The main loop of the game."""
