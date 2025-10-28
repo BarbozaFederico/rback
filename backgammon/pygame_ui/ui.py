@@ -238,22 +238,36 @@ class PygameUI:
 
         # Draw checkers on the bar
         bar_x = self.board_edge + 6 * self.point_width + self.bar_width / 2
+
+        # Define fixed Y positions for bar checkers to avoid overlap with info
+        y_pos_blancas = HEIGHT * 0.8
+        y_pos_negras = HEIGHT * 0.9
+
+        positions = {"blancas": y_pos_blancas, "negras": y_pos_negras}
+
         for color_name, checkers in self.game.board.bar.items():
+            if not checkers:
+                continue
+
             color = checker_colors[color_name]
-            y_pos = (
-                HEIGHT / 2 - self.checker_radius
-                if color_name == "blancas"
-                else HEIGHT / 2 + self.checker_radius
+            center_y = positions[color_name]
+
+            # Draw a single checker representing the stack on the bar
+            pygame.draw.circle(
+                self.screen, color, (bar_x, center_y), self.checker_radius
             )
-            direction = -1 if color_name == "blancas" else 1
-            for i, checker in enumerate(checkers):
-                center_y = y_pos + (i * 2 * self.checker_radius * direction)
-                pygame.draw.circle(
-                    self.screen, color, (bar_x, center_y), self.checker_radius
+            pygame.draw.circle(
+                self.screen, COLOR_BORDE_FICHA, (bar_x, center_y), self.checker_radius, 2
+            )
+
+            # If there's more than one, draw the count
+            if len(checkers) > 1:
+                text_color = COLOR_PIEZA_NEGRA if color_name == 'blancas' else COLOR_PIEZA_BLANCA
+                count_text = self.font.render(
+                    str(len(checkers)), True, text_color
                 )
-                pygame.draw.circle(
-                    self.screen, COLOR_BORDE_FICHA, (bar_x, center_y), self.checker_radius, 2
-                )
+                text_rect = count_text.get_rect(center=(bar_x, center_y))
+                self.screen.blit(count_text, text_rect)
 
         # Draw borne-off checkers count inside the bear-off areas
         white_borne_off = len(self.game.board.get_borne_off("blancas"))
