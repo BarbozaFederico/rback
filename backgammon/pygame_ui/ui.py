@@ -220,8 +220,8 @@ class PygameUI:
                 else rect.bottom - self.checker_radius
             )
 
-            # Draw up to 4 checkers
-            num_to_draw = min(len(checkers), 4)
+            # Draw up to 5 checkers
+            num_to_draw = min(len(checkers), 5)
             for i in range(num_to_draw):
                 center_x = rect.centerx
                 center_y = base_y + (i * 2 * self.checker_radius * direction)
@@ -241,16 +241,16 @@ class PygameUI:
                     2,
                 )
 
-            # If there are 5 or more checkers, display the count on the last visible checker
-            if len(checkers) > 4:
+            # If there are 6 or more checkers, display the count on the last visible checker
+            if len(checkers) > 5:
                 text_color = (
                     COLOR_PIEZA_NEGRA
                     if player_color == "blancas"
                     else COLOR_PIEZA_BLANCA
                 )
                 count_text = self.font.render(str(len(checkers)), True, text_color)
-                # Position the count on the 4th checker's position (index 3)
-                count_y = base_y + (3 * 2 * self.checker_radius * direction)
+                # Position the count on the 5th checker's position (index 4)
+                count_y = base_y + (4 * 2 * self.checker_radius * direction)
                 text_rect = count_text.get_rect(center=(rect.centerx, count_y))
                 self.screen.blit(count_text, text_rect)
 
@@ -397,8 +397,8 @@ class PygameUI:
                 end_pos = (rect.left + i, rect.bottom)
                 pygame.draw.line(self.screen, line_color, start_pos, end_pos, 1)
             pygame.draw.rect(
-                self.screen, COLOR_TRIANGULO_OSCURO, rect, 2
-            )  # Borde oscuro
+                self.screen, COLOR_TRIANGULO_CLARO, rect, 3
+            )  # Borde más grueso y claro
 
         # Colores de los triángulos
         color1 = COLOR_TRIANGULO_CLARO
