@@ -220,8 +220,8 @@ class PygameUI:
                 else rect.bottom - self.checker_radius
             )
 
-            # Draw up to 5 checkers
-            num_to_draw = min(len(checkers), 5)
+            # Draw up to 4 checkers
+            num_to_draw = min(len(checkers), 4)
             for i in range(num_to_draw):
                 center_x = rect.centerx
                 center_y = base_y + (i * 2 * self.checker_radius * direction)
@@ -241,7 +241,7 @@ class PygameUI:
                     2,
                 )
 
-            # If there are 6 or more checkers, display the count on the last visible checker
+            # If there are more than 5 checkers, display the count on the last visible checker
             if len(checkers) > 5:
                 text_color = (
                     COLOR_PIEZA_NEGRA
@@ -249,8 +249,8 @@ class PygameUI:
                     else COLOR_PIEZA_BLANCA
                 )
                 count_text = self.font.render(str(len(checkers)), True, text_color)
-                # Position the count on the 5th checker's position (index 4)
-                count_y = base_y + (4 * 2 * self.checker_radius * direction)
+                # Position the count on the 4th checker's position (index 3)
+                count_y = base_y + (3 * 2 * self.checker_radius * direction)
                 text_rect = count_text.get_rect(center=(rect.centerx, count_y))
                 self.screen.blit(count_text, text_rect)
 
