@@ -220,8 +220,8 @@ class PygameUI:
                 else rect.bottom - self.checker_radius
             )
 
-            # Draw up to 4 checkers
-            num_to_draw = min(len(checkers), 4)
+            # Draw up to 5 checkers
+            num_to_draw = min(len(checkers), 5)
             for i in range(num_to_draw):
                 center_x = rect.centerx
                 center_y = base_y + (i * 2 * self.checker_radius * direction)
@@ -249,8 +249,8 @@ class PygameUI:
                     else COLOR_PIEZA_BLANCA
                 )
                 count_text = self.font.render(str(len(checkers)), True, text_color)
-                # Position the count on the 4th checker's position (index 3)
-                count_y = base_y + (3 * 2 * self.checker_radius * direction)
+                # Position the count on the 5th checker's position (index 4)
+                count_y = base_y + (4 * 2 * self.checker_radius * direction)
                 text_rect = count_text.get_rect(center=(rect.centerx, count_y))
                 self.screen.blit(count_text, text_rect)
 
@@ -404,7 +404,7 @@ class PygameUI:
         color1 = COLOR_TRIANGULO_CLARO
         color2 = COLOR_TRIANGULO_OSCURO
 
-        # Dibuja los triángulos
+        # Dibuja los triángulos y los números
         for i, rect in enumerate(self.point_rects):
             if rect is None:
                 continue
@@ -439,6 +439,27 @@ class PygameUI:
                         (rect.right, rect.bottom - triangle_margin),
                         rect.midtop,
                     ],
+                )
+
+            # Draw number
+            ui_number = i + 1
+            num_text = self.font.render(str(ui_number), True, COLOR_TEXTO_NEGRO)
+            text_margin = 5
+            if i >= 12:  # Top row
+                self.screen.blit(
+                    num_text,
+                    (
+                        rect.centerx - num_text.get_width() / 2,
+                        rect.bottom + text_margin,
+                    ),
+                )
+            else:  # Bottom row
+                self.screen.blit(
+                    num_text,
+                    (
+                        rect.centerx - num_text.get_width() / 2,
+                        rect.top - num_text.get_height() - text_margin,
+                    ),
                 )
 
     def _get_point_from_pos(self, pos):
